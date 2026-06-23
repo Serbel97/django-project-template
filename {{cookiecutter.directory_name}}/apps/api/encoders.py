@@ -11,27 +11,19 @@ from django.utils.translation import gettext as _
 
 
 class ApiJSONEncoder(DjangoJSONEncoder):
-    def __init__(self, **kwargs):
-        self._serializer = None
-        self._request = None
-
-        if 'serializer' in kwargs:
-            self._serializer = kwargs.get('serializer')
-            del kwargs['serializer']
-        if 'request' in kwargs:
-            self._request = kwargs.get('request')
-            del kwargs['request']
-
-        super().__init__(**kwargs)
+    """
+    JSON encoder for the few raw ``dict`` payloads we serialise directly (e.g. the status
+    endpoint). Model instances are serialised through pydantic serializers in
+    ``apps.api.response`` and must not be passed here.
+    """
 
     def default(self, o):
         if isinstance(o, decimal.Decimal):
             return float(o)
         if isinstance(o, models.Model):
-            if self._serializer:
-                return self._serializer(o, request=self._request if self._request else None).dict()
-            else:
-                raise RuntimeError(_('Serializer non specified.'))
+            raise RuntimeError(
+                _('Model instances must be serialised through a pydantic serializer, not ApiJSONEncoder.')
+            )
         if isinstance(o, UUID):
             return str(o)
         if isinstance(o, Page):

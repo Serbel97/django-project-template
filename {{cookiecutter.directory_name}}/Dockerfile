@@ -1,4 +1,4 @@
-FROM python:3.12-slim as builder
+FROM python:3.14-slim AS builder
 
 # System setup
 RUN apt update -y
@@ -17,7 +17,7 @@ ENV PYTHONUNBUFFERED 1
 RUN pip3 install --user gunicorn wheel --no-cache-dir
 RUN pip3 install --user -r requirements.txt --no-cache-dir
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN apt update -y
 RUN apt install -y supervisor curl postgresql-client argon2 tzdata cron

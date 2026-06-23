@@ -37,21 +37,37 @@ class Ordering:
     columns: List[str]
 
     @classmethod
-    def create_from_request(cls, request, aliases: dict = None) -> 'Ordering':
+    def create_from_request(cls, request, aliases: dict = None, allowed=None) -> 'Ordering':
+        """
+        Build an ``Ordering`` from the ``order_by`` query parameter.
+
+        ``aliases`` maps a public column name to the underlying ORM field. ``allowed`` is an
+        iterable of ORM fields clients are permitted to sort by; when provided, any other column
+        is rejected with HTTP 400 to prevent ``order_by`` injection / information disclosure.
+        """
         columns = []
         aliases = aliases or {}
+        allowed = set(allowed) if allowed is not None else None
 
         for column in request.GET.getlist('order_by', ['created_at']):
-            column_name = column[1:] if column.startswith('-') else column
-            if column_name in aliases.keys():
-                columns.append(
-                    f'-{aliases[column_name]}' if column.startswith('-') else aliases[column_name]
-                )
-            else:
-                columns.append(column)
+            descending = column.startswith('-')
+            column_name = column[1:] if descending else column
+            resolved = aliases.get(column_name, column_name)
 
-        result = Ordering(columns)
-        return result
+            if allowed is not None and resolved not in allowed:
+                raise ProblemDetailException(
+                    title=_('Invalid ordering column'),
+                    status=HTTPStatus.BAD_REQUEST,
+                    detail_type=DetailType.OUT_OF_RANGE,
+                    detail=_('Cannot order by "%(column)s". Allowed columns: %(allowed)s') % {
+                        'column': column_name,
+                        'allowed': ', '.join(sorted(allowed)),
+                    },
+                )
+
+            columns.append(f'-{resolved}' if descending else resolved)
+
+        return Ordering(columns)
 
     def __str__(self):
         return ','.join(self.columns)
@@ -130,8 +146,10 @@ class PaginationResponse(GeneralResponse):
     def __init__(self, request, qs, serializer: Type[Serializer], ordering: Ordering = None, **kwargs):
         kwargs.setdefault('content_type', 'application/json')
 
-        # Ordering
-        ordering = ordering if ordering else Ordering.create_from_request(request)
+        # Ordering (restricted to the model's whitelisted sortable columns)
+        if not ordering:
+            allowed = getattr(qs.model, 'ORDERING_FIELDS', None)
+            ordering = Ordering.create_from_request(request, allowed=allowed)
         qs = qs.order_by(*ordering.columns)
 
         # Pagination

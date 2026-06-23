@@ -14,6 +14,10 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    # Columns clients may sort by via ``?order_by=`` (see apps.api.response.Ordering).
+    # Override on subclasses to expose additional sortable fields.
+    ORDERING_FIELDS: tuple[str, ...] = ('created_at', 'updated_at')
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     created_at = models.DateTimeField(db_default=Now())
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.6.0 : 2026-06-23
+
+### Upgrades
+- Django 6 and Python 3.14
+- Dependency bumps (django-filter, argon2-cffi, black 25)
+- Standard PostgreSQL `PG*` environment variables (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`)
+
+### Security & bug fixes
+- Fixed `BasicBackend` (base64 decode of credentials)
+- Added authorization to `UserDetail` (self-or-permission) and corrected the `UserChecker` logic
+- `default_permissions` now include `view`/`change` so `core.view_user` exists
+- `order_by` allow-list (`Model.ORDERING_FIELDS`) to prevent ordering injection
+- Token expiry computed at creation via `TokenManager`
+- Added CSRF middleware (API views are `csrf_exempt`) and production security settings (HSTS, secure cookies, SSL redirect, `ALLOWED_HOSTS` from env)
+- `SECRET_KEY` now required (raises `ImproperlyConfigured` if missing)
+
+### Deployment fixes
+- `supervisor.conf` uses the project's WSGI module (was hard-coded)
+- Aligned `supervisord` config path between Dockerfile and entrypoint
+- Fixed `docker-compose.yml` database credentials, volumes and healthcheck
+
+### Documentation
+- mkdocs-material documentation site with the proposal (IP) system and `.authors.yml`
+- `/ip` skill for quick proposal capture
+
+### Testing
+- Django `unittest` test suite covering API views, services and database behaviour (soft-delete, token expiry, managers, ordering)
+
 ## 0.5.0 : 2024-14-10
 
 - Remove request from exceptions

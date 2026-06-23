@@ -5,26 +5,45 @@ description = "{{cookiecutter.description}}"
 authors = ["BACKBONE <office@backbone.sk>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
-django = "^5"
+python = "^3.14"
+django = "^6.0"
 django_api_forms = "1.0.0rc11"
 django-imap-backend = "^0"
 django-object-checker = "^1.0.1"
-django-filter = "^24.2"
+django-filter = "^25.2"
 python-dotenv = "^1.0.0"
-argon2-cffi = "^23.1.0"
+argon2-cffi = "^25.1.0"
 psycopg = { version = "^3.1", extras = ["c"] }
 pydantic = "^2.5.3"
 sentry-sdk = "^2.0"
 redis = "^5.0.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.0"
+black = "^25.0"
+flake8 = "^7.1"
+mypy = "^1.13"
 fabric = "^3.2.2"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.6"
+
+[tool.mypy]
+python_version = "3.14"
+implicit_optional = true
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_redundant_casts = true
+exclude = ['migrations/', '/tests/']
+
+[[tool.mypy.overrides]]
+# The response/error layer leans on dynamic pydantic generics and runtime-built
+# serializer types that mypy can't statically follow.
+module = ["apps.api.response", "apps.api.errors"]
+disable_error_code = ["valid-type", "type-var", "attr-defined", "assignment", "return-value"]
 
 [tool.black]
 line-length = 119
-target-version = ['py312']
+target-version = ['py314']
 include = '\.pyi?$'
 exclude = '''
 /(

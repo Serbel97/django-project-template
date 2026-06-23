@@ -15,6 +15,6 @@ EMAIL_IMAP_SECRETS = [
         'USER': os.getenv('EMAIL_IMAP_USER'),
         'PASSWORD': os.getenv('EMAIL_IMAP_PASSWORD'),
         'MAILBOX': os.getenv('EMAIL_IMAP_MAILBOX'),
-        'SSL': False
+        'SSL': os.getenv('EMAIL_IMAP_SSL', 'true').lower() == 'true'
     }
 ]

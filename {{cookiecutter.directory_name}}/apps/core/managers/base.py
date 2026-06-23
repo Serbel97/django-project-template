@@ -1,4 +1,3 @@
-import random
 from django.db import models
 
 from apps.core.querysets.base import BaseQuerySet
@@ -13,7 +12,7 @@ class BaseManager(models.Manager):
         return self.get_queryset().hard_delete()
 
     def random(self):
-        return random.choice(self.all())
+        return self.get_queryset().order_by('?').first()
 
     def get_queryset(self):
         if self._alive_only:

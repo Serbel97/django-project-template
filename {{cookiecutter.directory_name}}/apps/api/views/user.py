@@ -57,16 +57,20 @@ class UserManagement(SecuredView):
 
 class UserDetail(SecuredView):
     @staticmethod
-    def _get_user(request, user_id: UUID) -> User:
+    def _get_user(request, user_id: UUID, perm: str) -> User:
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist as e:
             raise ProblemDetailException(_('User not found.'), status=HTTPStatus.NOT_FOUND, previous=e)
 
+        # A user may always act on their own record; otherwise the matching model permission is required.
+        if request.user != user and not request.user.has_perm(perm):
+            raise ProblemDetailException(_('Permission denied.'), status=HTTPStatus.FORBIDDEN)
+
         return user
 
     def get(self, request, user_id: UUID):
-        user = self._get_user(request, user_id)
+        user = self._get_user(request, user_id, 'core.view_user')
 
         return SingleResponse(request, data=user, serializer=UserSerializer.Detail)
 
@@ -77,7 +81,7 @@ class UserDetail(SecuredView):
         if not form.is_valid():
             raise ValidationException(form)
 
-        user = self._get_user(request, user_id)
+        user = self._get_user(request, user_id, 'core.change_user')
 
         if User.objects.filter(email=form.cleaned_data['email']).exclude(pk=user.id).exists():
             raise ProblemDetailException(
@@ -91,7 +95,7 @@ class UserDetail(SecuredView):
 
     @transaction.atomic
     def delete(self, request, user_id: UUID):
-        user = self._get_user(request, user_id)
+        user = self._get_user(request, user_id, 'core.delete_user')
         user.is_active = False
         user.delete()
 

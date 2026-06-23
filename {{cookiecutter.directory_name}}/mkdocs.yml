@@ -1,0 +1,99 @@
+site_name: {{cookiecutter.directory_name}}
+site_description: {{cookiecutter.description}}
+site_author: BACKBONE s.r.o.
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Proposals:
+      - proposals/index.md
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - def_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section
+
+plugins:
+  - search
+  - meta
+  - blog:
+      blog_dir: proposals
+      blog_toc: true
+      post_date_format: full
+      post_url_format: "{slug}"
+      post_slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      post_excerpt: required
+      post_excerpt_separator: <!-- more -->
+      archive: true
+      archive_name: All Proposals
+      archive_date_format: MMMM yyyy
+      archive_url_format: "archive/{date}"
+      categories: true
+      categories_name: Categories
+      categories_url_format: "category/{slug}"
+      categories_slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      pagination: true
+      pagination_per_page: 10
+      authors: true
+      authors_file: .authors.yml
+
+extra:
+  generator: false

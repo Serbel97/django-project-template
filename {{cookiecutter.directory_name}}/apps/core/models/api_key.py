@@ -24,10 +24,11 @@ class ApiKey(BaseModel):
         null=False,
         choices=DevicePlatform.choices,
         default=DevicePlatform.DEBUG,
+        db_default=DevicePlatform.DEBUG,
         verbose_name=_('apikey_platform')
     )
     secret = models.CharField(max_length=30, null=False, verbose_name=_('apikey_secret'))
-    is_active = models.BooleanField(default=False, verbose_name=_('apikey_is_active'))
+    is_active = models.BooleanField(default=False, db_default=False, verbose_name=_('apikey_is_active'))
 
 
 __all__ = [

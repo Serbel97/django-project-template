@@ -9,8 +9,10 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from sentry_sdk import set_tag
 
 from apps.api.errors import ProblemDetailException, DetailType
@@ -19,9 +21,9 @@ from apps.core.models import ApiKey
 
 
 class SecuredView(View):
-    EXEMPT_AUTH = []
-    EXEMPT_API_KEY = []
-    REQUIRE_SUPERUSER = []
+    EXEMPT_AUTH: list[str] = []
+    EXEMPT_API_KEY: list[str] = []
+    REQUIRE_SUPERUSER: list[str] = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -107,12 +109,14 @@ class SecuredView(View):
                     'received': signature,
                     'expected': signature_check,
                     'message': message,
+                    'path': request.path,
                 },
                 detail_type=DetailType.INVALID_SIGNATURE
             )
 
         return None
 
+    @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         if request.method not in self.EXEMPT_API_KEY:
             self._check_api_key(request)

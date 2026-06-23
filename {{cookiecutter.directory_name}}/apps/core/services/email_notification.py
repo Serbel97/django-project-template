@@ -25,7 +25,7 @@ class NotificationEmailService(object):
         self._template = template
         self._reply = reply
         self._files = files
-        self._static_files = []
+        self._static_files: list = []
 
     @classmethod
     def create(

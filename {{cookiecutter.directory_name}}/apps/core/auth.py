@@ -7,13 +7,13 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.models.token import Token
-from apps.api.errors import ProblemDetailException, UnauthorizedException
+from apps.api.errors import UnauthorizedException
 
 User = get_user_model()
 
 
 class BearerBackend(ModelBackend):
-    def authenticate(self, request, **kwargs) -> User:
+    def authenticate(self, request, **kwargs):
         try:
             token = Token.objects.get(pk=kwargs['bearer'], expires_at__gte=timezone.now())
         except (Token.DoesNotExist, ValidationError):
@@ -23,7 +23,7 @@ class BearerBackend(ModelBackend):
             raise UnauthorizedException(_('Inactive user.'), status=HTTPStatus.FORBIDDEN)
 
         token.user.last_login = timezone.now()
-        token.user.save()
+        token.user.save(update_fields=['last_login'])
 
         request.token = token
 

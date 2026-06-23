@@ -18,15 +18,13 @@ Simple quickstart for [Django](https://www.djangoproject.com/)-based projects cr
 - Dependency management using [poetry](https://python-poetry.org/)
 - Multi-environment settings
 - E-mail testing using [django-imap-backend](https://github.com/Sibyx/django-imap-backend) in `development` environment
-- CRON job management
 
 ### Bundled dependencies
 
 - [django_api_forms](https://github.com/Sibyx/django_api_forms): Request validation
 - [python-dotenv](https://github.com/theskumar/python-dotenv): `.env` handling
-- [porcupine-python](https://github.com/zurek11/porcupine-python): Response serialisation
+- [pydantic](https://github.com/pydantic/pydantic): Response serialisation
 - [django-imap-backend](https://github.com/Sibyx/django-imap-backend): Custom e-mail backend for simplified testing
-- [django-celery-beat](https://github.com/celery/django-celery-beat): CRON jobs
 
 ## Usage
 
@@ -40,13 +38,18 @@ cookiecutter gh:backbonesk/django-project-template
 ## Next steps
 
 1. Check `pyproject.toml` and change the `authors` list
-2. `cd {{ directory_name }}`
-3. `python -m venv venv`
-4. `poetry install && poetry update`
-5. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
-6. Call `python manage.py makemigrations` and then `python manage.py migrate`
-7. You are supposed to create superuser using `python manage.py createsuperuser`
-8. When the project is set up, you can call `{baseurl}/status` to check if everything is up and running
-9. Take a coffee and celebrate life, you saved a plenty of time!
+2. `cd <directory_name>`
+3. `poetry install && poetry update`
+4. Remove stuff you don't need (template is feature rich on purpose, it's easier to delete than create)
+5. Copy `.env.example` to `.env` and fill it in — in particular set a `SECRET_KEY`
+   (generate one at <https://djecrety.ir/>) and the `PG*` database variables.
+   **`SECRET_KEY` is required: every `manage.py` command fails without it.**
+6. Create the PostgreSQL database matching `PGDATABASE` (e.g. `createdb <name>`)
+7. Call `python manage.py makemigrations && python manage.py migrate`
+8. Create a superuser: `python manage.py createsuperuser` (prompts for email, name, surname, password)
+9. Start the server with `make run` (or `python manage.py runserver 0.0.0.0:8000`), then call
+   `curl http://localhost:8000/api/v1/status` to check everything is up and running
+10. (optional) Run the test suite with `make test`
+11. Take a coffee and celebrate life, you saved a plenty of time!
 ---
-Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2024
+Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2026
