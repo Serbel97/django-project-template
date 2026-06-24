@@ -27,22 +27,22 @@ services:
       PGPASSWORD: ${PGPASSWORD:-postgres}
       PGDATABASE: ${PGDATABASE:-{{cookiecutter.project_name}}}
       DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-{{cookiecutter.project_name}}.settings.development}
-      REDIS_HOST: redis
+      REDIS_HOST: valkey
       # Development-only key. Generate a fresh one per environment and inject it via secrets in production.
       SECRET_KEY: ${SECRET_KEY:-'oqjwvmob^(qwlil^8ub8%a@o5@a!^x0j1*^*1m@y46k%(6+w'}
     ports:
       - 8000:8000
     depends_on:
       - db
-  redis:
-    image: "redis:6-alpine"
-    command: redis-server
+  # Valkey: BSD-licensed, drop-in replacement for Redis (same protocol/commands).
+  # Used instead of Redis to avoid Redis' SSPL/RSAL/AGPL licensing.
+  valkey:
+    image: "valkey/valkey:8-alpine"
+    command: valkey-server
     ports:
       - "6379:6379"
     volumes:
-      - ./data/redis:/data
-    environment:
-      REDIS_REPLICATION_MODE: master
+      - ./data/valkey:/data
 volumes:
   private_storage:
   media_storage:
