@@ -57,7 +57,6 @@ IS_ENABLED_ANONYMOUS_USER = False
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -255,8 +254,18 @@ PAGINATION = {
 
 
 # Notifications
-EMAIL_SENDER_NAME = os.getenv('EMAIL_SENDER_NAME')
+EMAIL_SENDER_NAME = os.getenv('EMAIL_SENDER_NAME', '{{cookiecutter.project_name}}')
 EMAIL_IMAP_USER = os.getenv('EMAIL_IMAP_USER')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false').lower() == 'true'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_SENDER = os.getenv('EMAIL_HOST_USER')
+EMAIL_REPLY_TO = os.getenv('EMAIL_HOST_USER')
+DEFAULT_FROM_EMAIL = f'{EMAIL_SENDER_NAME} <{os.getenv("EMAIL_HOST_USER")}>'
 
 
 # Templates

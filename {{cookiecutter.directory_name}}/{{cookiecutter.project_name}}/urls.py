@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import path, include
 from django.views.static import serve
 
@@ -24,7 +23,6 @@ from apps.api import urls as api_urlpatterns
 
 urlpatterns = []
 urlpatterns += [
-    path('admin/', admin.site.urls),
     path(r'api/v1/', include(api_urlpatterns)),
 ]
 

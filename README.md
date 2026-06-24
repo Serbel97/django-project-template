@@ -52,4 +52,4 @@ cookiecutter gh:backbonesk/django-project-template
 10. (optional) Run the test suite with `make test`
 11. Take a coffee and celebrate life, you saved a plenty of time!
 ---
-Made with ❤️ and ☕️ BACKBONE s.r.o. (c) 2026
+Made with ❤️ and ☕️ BACKBONE, s.r.o. (c) 2026

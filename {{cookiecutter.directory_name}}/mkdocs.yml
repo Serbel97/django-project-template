@@ -1,6 +1,6 @@
 site_name: {{cookiecutter.directory_name}}
 site_description: {{cookiecutter.description}}
-site_author: BACKBONE s.r.o.
+site_author: BACKBONE, s.r.o.
 
 theme:
   name: material

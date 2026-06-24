@@ -180,5 +180,9 @@ All feature development follows the **proposal-first methodology**:
 
 1. Update `pyproject.toml` version (Semantic Versioning)
 2. Update `CHANGELOG.md` with changes (change "TBD" to release date)
-3. Get QA approval
-4. Merge to `master`
+3. Open a pull request against `develop`
+4. Get QA approval and code review on the PR
+5. A human merges the approved PR to `develop`
+
+> **Claude must never commit or push to `develop` or `master` directly.** Always
+> work on a branch and open a pull request; merging is a human decision.
