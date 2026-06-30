@@ -13,7 +13,7 @@
 - `default_permissions` now include `view`/`change` so `core.view_user` exists
 - `order_by` allow-list (`Model.ORDERING_FIELDS`) to prevent ordering injection
 - Token expiry computed at creation via `TokenManager`
-- Added CSRF middleware (API views are `csrf_exempt`) and production security settings (HSTS, secure cookies, SSL redirect, `ALLOWED_HOSTS` from env)
+- Added CSRF middleware (API views are `csrf_exempt`) and production security settings (secure cookies, SSL redirect, `ALLOWED_HOSTS` from env)
 - `SECRET_KEY` now required (raises `ImproperlyConfigured` if missing)
 
 ### Deployment fixes
