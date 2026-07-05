@@ -13,9 +13,13 @@ class UserForm:
         surname = fields.CharField(required=True, max_length=150, label="Surname")
         email = fields.EmailField(required=True, label="Email")
 
+        def clean_email(self):
+            email = self.cleaned_data['email'].lower()
+            return email
+
     class Create(Update):
         def clean_email(self):
-            email = self.cleaned_data['email']
+            email = self.cleaned_data['email'].lower()
             if User.all_objects.filter(email=email).exists():
                 self.add_error(
                     ('email',),

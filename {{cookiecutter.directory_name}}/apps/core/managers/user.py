@@ -8,12 +8,12 @@ class UserManager(BaseUserManager, BaseManager):
 
     def get_by_natural_key(self, username):
         conditions = {
-            f"{self.model.USERNAME_FIELD}__iexact": username
+            f"{self.model.USERNAME_FIELD}__exact": username
         }
         return self.get(**conditions)
 
     def _create_user(self, email, name, surname, password):
-        user = self.model(email=email, name=name, surname=surname)
+        user = self.model(email=email.lower(), name=name, surname=surname)
         user.set_password(password)
         return user
 

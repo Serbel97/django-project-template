@@ -22,9 +22,9 @@ class TestUserManager(TestCase):
 
         self.assertTrue(user.is_superuser)
 
-    def test_get_by_natural_key_is_case_insensitive(self):
+    def test_get_by_natural_key(self):
         user = User.objects.create_user(
-            email='Mixed@Example.com', name='Mixed', surname='Case', password='Secret123!'
+            email='mixed@Example.com', name='Mixed', surname='Case', password='Secret123!'
         )
 
         self.assertEqual(User.objects.get_by_natural_key('mixed@example.com'), user)
