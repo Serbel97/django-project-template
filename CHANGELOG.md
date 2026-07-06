@@ -22,7 +22,7 @@
 - Fixed `docker-compose.yml` database credentials, volumes and healthcheck
 
 ### Documentation
-- mkdocs-material documentation site with the proposal (IP) system and `.authors.yml`
+- Markdown-based proposal (IP) system under `docs/proposals/`
 - `/ip` skill for quick proposal capture
 
 ### Testing

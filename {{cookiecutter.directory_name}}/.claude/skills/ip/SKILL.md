@@ -33,16 +33,12 @@ All paths are relative to the **current working directory** (the project root). 
 
 ## Author
 
-Two distinct author fields, do not confuse them:
+Derive the author from git at runtime; do not hardcode a username. This value is used for
+both the frontmatter `author:` field and the Changelog column:
 
-- **Changelog column** (`{author}`): derive from git at runtime; do not hardcode a username:
-  ```sh
-  git config user.name || git config user.email || echo "author"
-  ```
-- **Frontmatter `authors:` list**: must contain **keys defined in `docs/.authors.yml`**
-  (the mkdocs-material blog plugin validates this, and each entry requires an `avatar`). Default
-  to `author`. If the contributor is not yet listed, add an entry to `docs/.authors.yml` first,
-  then reference its key here.
+```sh
+git config user.name || git config user.email || echo "author"
+```
 
 ## Workflow
 
@@ -80,8 +76,7 @@ Two distinct author fields, do not confuse them:
 3. Derive slug from description (lowercase, hyphens, max 40 chars)
 4. Read template: `docs/proposals/.template.md`
 5. Create `docs/proposals/posts/IP-{NNN}-{slug}.md` with:
-   - Updated frontmatter (`date: {today}`, `authors: [author]` — a key from `.authors.yml`, categories, tags)
-   - A `<!-- more -->` excerpt separator after the intro (required by the blog plugin)
+   - Updated frontmatter (`date: {today}`, `author: {author}`, tags)
    - Title: `# IP-{NNN}: [Full Title]`
    - All template sections filled in
    - **Review Questions section** (required for AI-created proposals)

@@ -75,7 +75,7 @@ All feature development follows the **proposal-first methodology**:
 
 1. Create proposal in `docs/proposals/posts/IP-XXX-feature-name.md` (use the `/ip` skill to scaffold it)
 2. Follow template: Status, Problem Statement, Proposed Solution, Implementation Plan, Alternatives, Trade-offs
-3. Proposals use mkdocs-material blog format with metadata (draft, date, authors, categories, tags)
+3. Proposals are markdown files with frontmatter metadata (date, author, tags)
 4. Accepted proposals become implementation specifications
 
 **Proposal Template Structure** (see `docs/proposals/.template.md`):

@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.postgres.functions import RandomUUID
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.db.models.functions import Now
@@ -18,9 +19,9 @@ class BaseModel(models.Model):
     # Override on subclasses to expose additional sortable fields.
     ORDERING_FIELDS: tuple[str, ...] = ('created_at', 'updated_at')
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    created_at = models.DateTimeField(db_default=Now())
-    updated_at = models.DateTimeField(auto_now=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, db_default=RandomUUID())
+    created_at = models.DateTimeField(auto_now_add=True, db_default=Now())
+    updated_at = models.DateTimeField(auto_now=True, db_default=Now())
     deleted_at = models.DateTimeField(blank=True, null=True)
 
     objects = BaseManager()

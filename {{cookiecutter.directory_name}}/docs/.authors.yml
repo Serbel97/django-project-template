@@ -1,9 +1,0 @@
-# Authors referenced by proposal frontmatter (`authors:` keys) and the mkdocs-material blog plugin.
-# Add an entry per contributor; the key is what you put in a proposal's `authors:` list.
-# `avatar` is required by the blog plugin.
-authors:
-  author:
-    name: BACKBONE
-    description: BACKBONE, s.r.o.
-    avatar: https://www.gravatar.com/avatar/00000000000000000000000000000000?d=identicon&s=200
-    url: mailto:office@backbone.sk

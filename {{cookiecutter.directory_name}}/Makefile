@@ -1,7 +1,7 @@
 SETTINGS = {{cookiecutter.project_name}}.settings.test
 DEV_SETTINGS = {{cookiecutter.project_name}}.settings.development
 
-.PHONY: run test test-keepdb migrations migrate format lint typecheck docs
+.PHONY: run test test-keepdb migrations migrate format lint typecheck
 
 run:  ## Start the development server on port 8000
 	python manage.py runserver 0.0.0.0:8000 --settings=$(DEV_SETTINGS)
@@ -26,6 +26,3 @@ lint:  ## Lint with flake8
 
 typecheck:  ## Type-check with mypy
 	mypy apps/
-
-docs:  ## Serve the documentation site locally
-	mkdocs serve
