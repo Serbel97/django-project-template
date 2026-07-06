@@ -46,6 +46,25 @@ class TestUserRegistration(Base):
         self.assertEqual(response.status_code, HTTPStatus.UNPROCESSABLE_ENTITY)
 
 
+class TestUserEmailCaseInsensitive(Base):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls._url = reverse('user-management')
+
+    def test_register_rejects_case_variant_of_existing_email(self):
+        UserFixture.create_user(email='taken@example.com')
+        response = self.post(self._url, {'email': 'Taken@Example.com', 'name': 'New', 'surname': 'User'})
+
+        self.assertEqual(response.status_code, HTTPStatus.UNPROCESSABLE_ENTITY)
+
+    def test_register_strips_and_lowercases_email(self):
+        response = self.post(self._url, {'email': '  Fresh@Example.COM ', 'name': 'Fr', 'surname': 'Esh'})
+
+        self.assertEqual(response.status_code, HTTPStatus.CREATED)
+        self.assertTrue(User.objects.filter(email='fresh@example.com').exists())
+
+
 class TestUserList(Base):
     @classmethod
     def setUpTestData(cls):

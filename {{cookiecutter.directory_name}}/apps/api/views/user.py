@@ -83,7 +83,7 @@ class UserDetail(SecuredView):
 
         user = self._get_user(request, user_id, 'core.change_user')
 
-        if User.objects.filter(email=form.cleaned_data['email']).exclude(pk=user.id).exists():
+        if User.objects.filter(email__iexact=form.cleaned_data['email']).exclude(pk=user.id).exists():
             raise ProblemDetailException(
                 _('User with the same email already exists.'), status=HTTPStatus.CONFLICT
             )

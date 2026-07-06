@@ -28,3 +28,10 @@ class TestUserManager(TestCase):
         )
 
         self.assertEqual(User.objects.get_by_natural_key('mixed@example.com'), user)
+
+    def test_create_user_strips_and_lowercases_email(self):
+        user = User.objects.create_user(
+            email='  Spaced@Example.COM ', name='Sp', surname='Aced', password='Secret123!'
+        )
+
+        self.assertEqual(user.email, 'spaced@example.com')

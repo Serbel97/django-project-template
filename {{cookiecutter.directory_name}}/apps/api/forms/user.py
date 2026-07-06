@@ -14,13 +14,13 @@ class UserForm:
         email = fields.EmailField(required=True, label="Email")
 
         def clean_email(self):
-            email = self.cleaned_data['email'].lower()
+            email = self.cleaned_data['email'].strip().lower()
             return email
 
     class Create(Update):
         def clean_email(self):
-            email = self.cleaned_data['email'].lower()
-            if User.all_objects.filter(email=email).exists():
+            email = self.cleaned_data['email'].strip().lower()
+            if User.all_objects.filter(email__iexact=email).exists():
                 self.add_error(
                     ('email',),
                     ValidationError(_('User with the same email already exists.'), code='email-already-exists')

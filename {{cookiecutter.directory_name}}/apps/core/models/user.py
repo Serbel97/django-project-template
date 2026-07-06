@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import gettext as _
 from django.db import models
+from django.db.models.functions import Lower
 
 from apps.core.managers.user import UserManager
 
@@ -13,6 +14,9 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         app_label = 'core'
         db_table = 'users'
         default_permissions = ('add', 'change', 'delete', 'view')
+        constraints = [
+            models.UniqueConstraint(Lower('email'), name='user_email_ci_unique'),
+        ]
 
     # Whitelist of columns clients may sort by via ``?order_by=`` (see apps.api.response.Ordering)
     ORDERING_FIELDS = ('created_at', 'updated_at', 'email', 'name', 'surname', 'last_login')
@@ -30,6 +34,11 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'surname']
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
     def get_full_name(self) -> str:
         return f'{self.name} {self.surname}'

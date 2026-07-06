@@ -8,7 +8,7 @@ class RecoveryCodeForm:
         email = fields.EmailField(label='Email')
 
         def clean_email(self):
-            email = self.cleaned_data['email'].lower()
+            email = self.cleaned_data['email'].strip().lower()
             return email
 
     class Password(Form):
