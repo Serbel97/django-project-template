@@ -9,6 +9,7 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
+from django.middleware.csrf import CsrfViewMiddleware
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views import View
@@ -38,25 +39,23 @@ class SecuredView(View):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
+            raise UnauthorizedException(detail=_('Invalid or missing Authorization header'))
 
         auth_header = str(auth_header).split(' ')
 
         if len(auth_header) != 2:
-            raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
+            raise UnauthorizedException(detail=_('Invalid or missing Authorization header'))
 
         if not auth_header[0] in settings.SECURED_VIEW_AUTHENTICATION_SCHEMAS.keys():
             raise UnauthorizedException(detail=_('Unsupported authentication schema'))
 
-        auth_params = {
-            auth_header[0].lower(): auth_header[1]
-        }
+        auth_params = {auth_header[0].lower(): auth_header[1]}
 
         user = self._backends[auth_header[0].lower()].authenticate(request, **auth_params)
 
         if not settings.IS_ENABLED_ANONYMOUS_USER:
             if user.is_anonymous:
-                raise UnauthorizedException(detail=_("Invalid or missing Authorization header"))
+                raise UnauthorizedException(detail=_('Invalid or missing Authorization header'))
 
         return user
 
@@ -67,8 +66,7 @@ class SecuredView(View):
             api_key_model = ApiKey.objects.get(pk=api_key, is_active=True)
         except ApiKey.DoesNotExist:
             raise ProblemDetailException(
-                _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED,
-                detail_type=DetailType.INVALID_APIKEY
+                _('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED, detail_type=DetailType.INVALID_APIKEY
             )
 
         request.api_key = api_key_model
@@ -76,9 +74,7 @@ class SecuredView(View):
 
         if api_key_model.platform == ApiKey.DevicePlatform.DEBUG and not settings.DEBUG:
             raise ProblemDetailException(
-                title=_('Invalid api key.'),
-                status=HTTPStatus.UNAUTHORIZED,
-                detail_type=DetailType.INVALID_APIKEY
+                title=_('Invalid api key.'), status=HTTPStatus.UNAUTHORIZED, detail_type=DetailType.INVALID_APIKEY
             )
         else:
             self._check_signature(request, api_key_model)
@@ -95,9 +91,7 @@ class SecuredView(View):
 
         message = f"{request.body.decode('utf-8')}:{request.path}"
         signature_check = hmac.new(
-            api_key.secret.encode('utf-8'),
-            msg=message.encode('utf-8'),
-            digestmod=hashlib.sha256
+            api_key.secret.encode('utf-8'), msg=message.encode('utf-8'), digestmod=hashlib.sha256
         ).hexdigest()
 
         if signature != signature_check:
@@ -111,24 +105,45 @@ class SecuredView(View):
                     'message': message,
                     'path': request.path,
                 },
-                detail_type=DetailType.INVALID_SIGNATURE
+                detail_type=DetailType.INVALID_SIGNATURE,
             )
 
         return None
 
+    @staticmethod
+    def _is_session_request(request: HttpRequest) -> bool:
+        # Browser clients hold no secret, so a request without an Authorization header that carries an
+        # authenticated session (opened by the break-glass login) skips the API key and signature.
+        return 'Authorization' not in request.headers and request.user.is_authenticated
+
+    @staticmethod
+    def _check_csrf(request: HttpRequest):
+        # The view is csrf_exempt (it authenticates with headers or the session itself), so the
+        # middleware check is run here for the requests that need it.
+        rejection = CsrfViewMiddleware(lambda req: None).process_view(request, None, (), {})
+        if rejection is not None:
+            raise ProblemDetailException(_('CSRF verification failed.'), status=HTTPStatus.FORBIDDEN)
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        if request.method not in self.EXEMPT_API_KEY:
-            self._check_api_key(request)
+        if self._is_session_request(request):
+            self._check_csrf(request)
+        else:
+            if request.method in self.EXEMPT_API_KEY:
+                # Browser endpoints called before login have no API key; CSRF guards them instead.
+                self._check_csrf(request)
+            else:
+                self._check_api_key(request)
 
-        request.user = self._authenticate(request)
+            request.user = self._authenticate(request)
         if request.user.is_authenticated:
             set_tag('user.id', request.user.id)
 
         if request.method in self.REQUIRE_SUPERUSER:
             if not request.user.is_superuser:
                 raise ProblemDetailException(
-                    _('Insufficient permissions'), status=HTTPStatus.FORBIDDEN,
+                    _('Insufficient permissions'),
+                    status=HTTPStatus.FORBIDDEN,
                 )
 
         return super().dispatch(request, *args, **kwargs)

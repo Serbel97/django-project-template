@@ -7,6 +7,7 @@ https://docs.djangoproject.com/en/stable/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/stable/ref/settings/
 """
+
 import os
 import datetime
 import tomllib
@@ -30,21 +31,21 @@ INSTANCE_NAME = os.getenv('INSTANCE_NAME', '{{cookiecutter.project_name}}')
 
 if BUILD_FILE.exists():
     with open(BUILD_FILE) as f:
-        BUILD = f.readline().replace('\n', '')
+        BUILD = f.readline().replace("\n", '')
 else:
     BUILD = datetime.datetime.now().isoformat()
 
-with open(BASE_DIR / "pyproject.toml", "rb") as f:
+with open(BASE_DIR / 'pyproject.toml', 'rb') as f:
     _META = tomllib.load(f)
 
-VERSION = _META["tool"]["poetry"]["version"]
+VERSION = _META['tool']['poetry']['version']
 
 # See https://docs.djangoproject.com/en/stable/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY:
-    raise ImproperlyConfigured("The SECRET_KEY environment variable must be set.")
+    raise ImproperlyConfigured('The SECRET_KEY environment variable must be set.')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -63,9 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
-
     'django_api_forms',
-
     'apps.core',
     'apps.api',
 ]
@@ -85,8 +84,7 @@ ROOT_URLCONF = '{{cookiecutter.project_name}}.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -112,7 +110,7 @@ DATABASES = {
         'PORT': os.getenv('PGPORT', 5432),
         'NAME': os.getenv('PGDATABASE'),
         'USER': os.getenv('PGUSER'),
-        'PASSWORD': os.getenv('PGPASSWORD', None)
+        'PASSWORD': os.getenv('PGPASSWORD', None),
     }
 }
 
@@ -153,14 +151,49 @@ AUTHENTICATION_BACKENDS = [
 
 SECURED_VIEW_AUTHENTICATION_SCHEMAS = {
     'Basic': 'apps.core.auth.BasicBackend',
-    'Bearer': 'apps.core.auth.BearerBackend'
+    'Bearer': 'apps.core.auth.BearerBackend',
 }
 
 TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
 RECOVERY_TIME_EXPIRATION = 1
 
-AUTH_USER_MODEL = "core.User"
+# Authentication switches (IP-003 Q6). Every switch is off unless its environment variable says otherwise:
+# BREAK_GLASS_ENABLED           → POST/DELETE /token, /auth/2fa*, /auth/break-glass* and /auth/session
+#                                 (password + TOTP login, session cookie)
+# AUTH_PASSWORD_RESET_ENABLED   → /recovery_code*, PATCH /users/<id>/password
+# AUTH_REGISTRATION_ENABLED     → POST /users (self-registration)
+# A disabled switch answers 404 and the route is not registered at all (apps/api/urls.py).
+DEPLOYMENT_ENVIRONMENT = os.getenv('DEPLOYMENT_ENVIRONMENT', 'dev')
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    return os.getenv(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+BREAK_GLASS_ENABLED = _env_flag('BREAK_GLASS_ENABLED')
+AUTH_PASSWORD_RESET_ENABLED = _env_flag('AUTH_PASSWORD_RESET_ENABLED')
+AUTH_REGISTRATION_ENABLED = _env_flag('AUTH_REGISTRATION_ENABLED')
+
+# Failed break-glass attempts per account before it is locked for BREAK_GLASS_LOCKOUT_SECONDS
+BREAK_GLASS_MAX_FAILURES = int(os.getenv('BREAK_GLASS_MAX_FAILURES', '5'))
+BREAK_GLASS_LOCKOUT_SECONDS = int(os.getenv('BREAK_GLASS_LOCKOUT_SECONDS', '900'))
+
+# Two-factor authentication
+TWO_FACTOR_CODE_EXPIRATION = datetime.timedelta(minutes=10)
+TWO_FACTOR_MAX_ATTEMPTS = 5
+TWO_FACTOR_BACKUP_CODE_COUNT = 10
+EMAIL_TWO_FACTOR_PATH = '_emails/two_factor_code.html'
+
+# Session cookie used by session-authenticated (browser) clients
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = _env_flag('SESSION_COOKIE_SECURE', default=True)
+SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', str(8 * 60 * 60)))
+# The SPA reads the CSRF cookie and echoes it in the X-CSRFToken header
+CSRF_COOKIE_HTTPONLY = False
+
+AUTH_USER_MODEL = 'core.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/stable/topics/i18n/
@@ -181,12 +214,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 50  # 50MB
 
@@ -229,6 +260,7 @@ LOGGING = {
 
 # Sentry
 if os.getenv('SENTRY_DSN', False):
+
     def before_send(event, hint):
         if 'exc_info' in hint:
             exc_type, exc_value, tb = hint['exc_info']
@@ -248,9 +280,7 @@ if os.getenv('SENTRY_DSN', False):
     )
 
 # Pagination
-PAGINATION = {
-    'DEFAULT_LIMIT': 10
-}
+PAGINATION = {'DEFAULT_LIMIT': 10}
 
 
 # Notifications
