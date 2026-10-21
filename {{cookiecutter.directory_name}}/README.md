@@ -114,6 +114,29 @@ class ExampleClassBasedView(SecuredView):
         pass
 ```
 
+## Authentication
+
+Users log in with their e-mail and password (`POST /token`) and get a Bearer token. With two-factor authentication
+enabled, the login answers `202` with a challenge, and `POST /auth/2fa/verify` returns the token. Two factors are
+supported: an authenticator app (TOTP, enrolled with `POST /auth/2fa` and confirmed with `POST /auth/2fa/confirm`)
+and an e-mailed one-time code. Backup codes are issued on enrolment and can be regenerated.
+
+Three switches in `settings/base.py` (environment variables of the same name, default `true`) turn paths off.
+A disabled path is not registered at all:
+
+| Switch                        | Routes                                                                  |
+|-------------------------------|-------------------------------------------------------------------------|
+| `PASSWORD_LOGIN_ENABLED`      | `/token`, `/auth/2fa*`                                                  |
+| `AUTH_PASSWORD_RESET_ENABLED` | `/recovery_code*`, `/users/<id>/password`                              |
+| `AUTH_REGISTRATION_ENABLED`   | `POST /users` (the path stays for `GET`, and the POST answers 404)     |
+
+`GET /auth/config` reports the switches so a client can render only the enabled login paths.
+
+Future option (not implemented): an account lockout after repeated failed logins. Today the only limit is the
+per-challenge cap of wrong two-factor codes (`TWO_FACTOR_MAX_ATTEMPTS`). A lockout would count failed password and
+code attempts per account and refuse logins for a set time.
+
+
 ## Cron jobs
 
 - `crontab -l` list all cron jobs
