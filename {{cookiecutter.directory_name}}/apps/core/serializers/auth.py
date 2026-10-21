@@ -21,6 +21,6 @@ class AuthSerializer:
         backup_codes: List[str] = Field(default_factory=list)
 
     class Config(Serializer):
-        break_glass_enabled: bool
+        password_login_enabled: bool
         password_reset_enabled: bool
         registration_enabled: bool

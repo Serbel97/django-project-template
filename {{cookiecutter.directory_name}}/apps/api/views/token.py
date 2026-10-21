@@ -46,7 +46,6 @@ class TokenManagement(SecuredView):
 
     @transaction.atomic
     def delete(self, request):
-        # Session-authenticated requests carry no Bearer token to delete
         token = getattr(request, 'token', None)
 
         if token:

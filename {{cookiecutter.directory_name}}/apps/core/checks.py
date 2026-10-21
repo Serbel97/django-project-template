@@ -1,20 +1,5 @@
 from django.conf import settings
-from django.core.checks import Error, Tags, Warning, register
-
-
-@register(Tags.security, deploy=True)
-def break_glass_in_production(app_configs, **kwargs):
-    """Warn on every deploy while the emergency password login is switched on in production."""
-    if settings.BREAK_GLASS_ENABLED and settings.DEPLOYMENT_ENVIRONMENT == 'prod':
-        return [
-            Warning(
-                'BREAK_GLASS_ENABLED is on in production.',
-                hint='Switch it off unless an emergency login is needed, then restart the service.',
-                id='core.W001',
-            )
-        ]
-
-    return []
+from django.core.checks import Error, Tags, register
 
 
 @register(Tags.security)

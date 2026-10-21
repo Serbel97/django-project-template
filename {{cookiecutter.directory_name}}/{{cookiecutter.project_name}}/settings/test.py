@@ -29,12 +29,6 @@ DATABASES = {
     }
 }
 
-# The authentication switches (IP-003 Q6) are forced on so their code stays tested; the defaults
-# are asserted in apps/tests/api/auth/test_switches.py against the base settings.
-BREAK_GLASS_ENABLED = True
-AUTH_PASSWORD_RESET_ENABLED = True
-AUTH_REGISTRATION_ENABLED = True
-
 # Collect e-mails in django.core.mail.outbox instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 

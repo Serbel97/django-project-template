@@ -39,10 +39,6 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     )
     totp_secret = models.CharField(null=True, max_length=64, verbose_name=_('user_totp_secret'))
 
-    # Break-glass lockout (IP-003 Q3): failed password + second-factor attempts since the last success
-    break_glass_failures = models.PositiveSmallIntegerField(null=False, default=0, db_default=0)
-    break_glass_locked_until = models.DateTimeField(null=True, verbose_name=_('user_break_glass_locked_until'))
-
     objects = UserManager()
     all_objects = UserManager(alive_only=False)
 

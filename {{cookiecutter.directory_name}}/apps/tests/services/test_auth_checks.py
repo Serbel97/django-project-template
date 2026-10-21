@@ -1,26 +1,9 @@
 """
-Tests for the authentication system checks (IP-003 Q3, Q6).
+Tests for the authentication system checks (IP-003 Q6).
 """
-
 from django.test import SimpleTestCase, override_settings
 
-from apps.core.checks import break_glass_in_production, registration_needs_password_reset
-
-
-class TestBreakGlassProductionCheck(SimpleTestCase):
-    @override_settings(BREAK_GLASS_ENABLED=True, DEPLOYMENT_ENVIRONMENT='prod')
-    def test_warns_when_break_glass_is_on_in_production(self):
-        errors = break_glass_in_production(None)
-
-        self.assertEqual([error.id for error in errors], ['core.W001'])
-
-    @override_settings(BREAK_GLASS_ENABLED=True, DEPLOYMENT_ENVIRONMENT='dev')
-    def test_silent_outside_production(self):
-        self.assertEqual(break_glass_in_production(None), [])
-
-    @override_settings(BREAK_GLASS_ENABLED=False, DEPLOYMENT_ENVIRONMENT='prod')
-    def test_silent_when_break_glass_is_off(self):
-        self.assertEqual(break_glass_in_production(None), [])
+from apps.core.checks import registration_needs_password_reset
 
 
 class TestRegistrationDependencyCheck(SimpleTestCase):

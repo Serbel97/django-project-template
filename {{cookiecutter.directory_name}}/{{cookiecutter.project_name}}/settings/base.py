@@ -158,40 +158,26 @@ TOKEN_EXPIRATION = datetime.timedelta(days=7)
 
 RECOVERY_TIME_EXPIRATION = 1
 
-# Authentication switches (IP-003 Q6). Every switch is off unless its environment variable says otherwise:
-# BREAK_GLASS_ENABLED           → POST/DELETE /token, /auth/2fa*, /auth/break-glass* and /auth/session
-#                                 (password + TOTP login, session cookie)
+# Authentication switches (IP-003 Q6). All on by default; set one to false to take that path away.
+# A disabled switch answers 404 and its routes are not registered (apps/api/urls.py).
+# PASSWORD_LOGIN_ENABLED        → POST/DELETE /token, /auth/2fa*  (password login, optional TOTP / e-mail code)
 # AUTH_PASSWORD_RESET_ENABLED   → /recovery_code*, PATCH /users/<id>/password
 # AUTH_REGISTRATION_ENABLED     → POST /users (self-registration)
-# A disabled switch answers 404 and the route is not registered at all (apps/api/urls.py).
-DEPLOYMENT_ENVIRONMENT = os.getenv('DEPLOYMENT_ENVIRONMENT', 'dev')
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
 
 
-BREAK_GLASS_ENABLED = _env_flag('BREAK_GLASS_ENABLED')
-AUTH_PASSWORD_RESET_ENABLED = _env_flag('AUTH_PASSWORD_RESET_ENABLED')
-AUTH_REGISTRATION_ENABLED = _env_flag('AUTH_REGISTRATION_ENABLED')
-
-# Failed break-glass attempts per account before it is locked for BREAK_GLASS_LOCKOUT_SECONDS
-BREAK_GLASS_MAX_FAILURES = int(os.getenv('BREAK_GLASS_MAX_FAILURES', '5'))
-BREAK_GLASS_LOCKOUT_SECONDS = int(os.getenv('BREAK_GLASS_LOCKOUT_SECONDS', '900'))
+PASSWORD_LOGIN_ENABLED = _env_flag('PASSWORD_LOGIN_ENABLED', default=True)
+AUTH_PASSWORD_RESET_ENABLED = _env_flag('AUTH_PASSWORD_RESET_ENABLED', default=True)
+AUTH_REGISTRATION_ENABLED = _env_flag('AUTH_REGISTRATION_ENABLED', default=True)
 
 # Two-factor authentication
 TWO_FACTOR_CODE_EXPIRATION = datetime.timedelta(minutes=10)
 TWO_FACTOR_MAX_ATTEMPTS = 5
 TWO_FACTOR_BACKUP_CODE_COUNT = 10
 EMAIL_TWO_FACTOR_PATH = '_emails/two_factor_code.html'
-
-# Session cookie used by session-authenticated (browser) clients
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = _env_flag('SESSION_COOKIE_SECURE', default=True)
-SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', str(8 * 60 * 60)))
-# The SPA reads the CSRF cookie and echoes it in the X-CSRFToken header
-CSRF_COOKIE_HTTPONLY = False
 
 AUTH_USER_MODEL = 'core.User'
 

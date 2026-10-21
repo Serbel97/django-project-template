@@ -23,7 +23,7 @@ class UserManagement(SecuredView):
 
     @transaction.atomic
     def post(self, request):
-        # Self-registration is switched off by default (AUTH_REGISTRATION_ENABLED); the route itself stays for GET.
+        # Self-registration, switched by AUTH_REGISTRATION_ENABLED; the route itself stays for GET.
         if not settings.AUTH_REGISTRATION_ENABLED:
             raise ProblemDetailException(_('Not found.'), status=HTTPStatus.NOT_FOUND)
 
