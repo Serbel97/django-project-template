@@ -18,6 +18,8 @@ class AuthConfig(SecuredView):
                 'password_login_enabled': settings.PASSWORD_LOGIN_ENABLED,
                 'password_reset_enabled': settings.AUTH_PASSWORD_RESET_ENABLED,
                 'registration_enabled': settings.AUTH_REGISTRATION_ENABLED,
+                'sso_enabled': settings.SSO_ENABLED,
+                'sso_provider_id': settings.OIDC_PROVIDER_ID or None,
             },
             serializer=AuthSerializer.Config,
         )

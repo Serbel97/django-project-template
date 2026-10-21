@@ -26,6 +26,15 @@ urlpatterns += [
     path(r'api/v1/', include(api_urlpatterns)),
 ]
 
+# Single sign-on (IP-003), only with an OIDC provider configured
+if settings.SSO_ENABLED:
+    urlpatterns += [
+        # allauth headless API for the SPA: config, provider redirect, session
+        path('_allauth/', include('allauth.headless.urls')),
+        # OIDC callbacks only: with HEADLESS_ONLY allauth registers none of its HTML views
+        path('accounts/', include('allauth.urls')),
+    ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, view=serve)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT, view=serve)

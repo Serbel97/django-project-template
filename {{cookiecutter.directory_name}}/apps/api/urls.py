@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path
 
-from apps.api.views import status, user, token, recovery_code, auth_config, two_factor
+from apps.api.views import status, user, token, recovery_code, auth_config, two_factor, sso
 
 urlpatterns = [
     path('auth/config', auth_config.AuthConfig.as_view(), name='auth-config'),
@@ -37,4 +37,10 @@ if settings.AUTH_PASSWORD_RESET_ENABLED:
             recovery_code.RecoveryCodeDetail.as_view(),
             name='recovery-code-id',
         ),
+    ]
+
+# Single sign-on (IP-003): the session of an SSO login swapped for a Bearer token. Absent without OIDC_PROVIDER_ID.
+if settings.SSO_ENABLED:
+    urlpatterns += [
+        path('auth/sso/token', sso.SSOTokenExchange.as_view(), name='sso-token'),
     ]

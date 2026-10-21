@@ -39,6 +39,9 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     )
     totp_secret = models.CharField(null=True, max_length=64, verbose_name=_('user_totp_secret'))
 
+    # Groups the IdP sent at the last SSO login (IP-003), as received; empty for local users
+    idp_groups = models.JSONField(null=False, default=list, blank=True, verbose_name=_('user_idp_groups'))
+
     objects = UserManager()
     all_objects = UserManager(alive_only=False)
 

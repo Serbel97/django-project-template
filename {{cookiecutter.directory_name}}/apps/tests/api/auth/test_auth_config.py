@@ -10,13 +10,19 @@ from apps.tests.base import Base
 
 
 class TestAuthConfig(Base):
-    def test_config_reports_the_switches_on_by_default(self):
+    def test_config_reports_the_switches(self):
         response = self.get(reverse('auth-config'))
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(
             response.content_dict['response'],
-            {'password_login_enabled': True, 'password_reset_enabled': True, 'registration_enabled': True},
+            {
+                'password_login_enabled': True,
+                'password_reset_enabled': True,
+                'registration_enabled': True,
+                'sso_enabled': True,
+                'sso_provider_id': 'test-idp',
+            },
         )
 
     def test_config_reflects_a_switch_turned_off(self):

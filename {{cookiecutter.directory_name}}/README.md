@@ -132,6 +132,35 @@ A disabled path is not registered at all:
 
 `GET /auth/config` reports the switches so a client can render only the enabled login paths.
 
+### Single sign-on (OpenID Connect)
+
+Set `OIDC_PROVIDER_ID` (plus `OIDC_SERVER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`) and users can log in at
+any OIDC identity provider (Keycloak, Microsoft Entra ID, ...) through
+[django-allauth](https://docs.allauth.org/) in headless mode. Without `OIDC_PROVIDER_ID` the SSO routes do
+not exist. The flow for the SPA:
+
+1. `POST /_allauth/browser/v1/auth/provider/redirect` (form post: `provider=<OIDC_PROVIDER_ID>`,
+   `process=login`, `callback_url=<SPA page>`) sends the browser to the IdP.
+2. The IdP calls back `/accounts/oidc/<OIDC_PROVIDER_ID>/login/callback/`; the API creates or refreshes the
+   user and redirects to `callback_url` with a session cookie.
+3. The SPA calls `POST /api/v1/auth/sso/token` once (API key + signature as usual, plus the `X-CSRFToken`
+   header from the `csrftoken` cookie). The answer is a Bearer token and the session ends, so the rest of
+   the API works exactly as after `POST /token`.
+
+The user is keyed by the IdP's subject (`sub`); e-mail, name and surname are refreshed at every login, and
+the groups claim (`OIDC_GROUPS_CLAIM`, default `groups`) is stored on `User.idp_groups`. There is no account
+linking by e-mail: an IdP that asserts the e-mail of an existing account is refused. Refused logins land on
+`<SPA_URL>/login/error?error=<code>` (`email_missing`, `email_conflict`). Logout ends the API token only, not
+the IdP session. Second factors are left to the IdP.
+
+IdP onboarding checklist:
+
+- issuer URL with `.well-known/openid-configuration` discovery → `OIDC_SERVER_URL`
+- a confidential client → `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`
+- redirect URI `https://<api-host>/accounts/oidc/<OIDC_PROVIDER_ID>/login/callback/`
+- scopes `openid email profile` (`OIDC_SCOPES`), plus whatever releases the groups claim
+- the SPA origin in `SPA_URL`; it is trusted for CSRF. A SPA on another site also needs CORS with credentials.
+
 Future option (not implemented): an account lockout after repeated failed logins. Today the only limit is the
 per-challenge cap of wrong two-factor codes (`TWO_FACTOR_MAX_ATTEMPTS`). A lockout would count failed password and
 code attempts per account and refuse logins for a set time.

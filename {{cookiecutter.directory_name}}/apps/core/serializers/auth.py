@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import Field
@@ -24,3 +24,5 @@ class AuthSerializer:
         password_login_enabled: bool
         password_reset_enabled: bool
         registration_enabled: bool
+        sso_enabled: bool
+        sso_provider_id: Optional[str] = Field(default=None)

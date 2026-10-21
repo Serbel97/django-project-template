@@ -29,6 +29,18 @@ DATABASES = {
     }
 }
 
+# SSO switched on against a fictitious IdP; no test talks to it.
+OIDC_PROVIDER_ID = 'test-idp'
+OIDC_SERVER_URL = 'https://idp.invalid/realms/test'
+OIDC_CLIENT_ID = 'test-client'
+OIDC_CLIENT_SECRET = 'test-client-secret'
+SSO_ENABLED = True
+SPA_URL = 'http://spa.test'
+SOCIALACCOUNT_PROVIDERS = build_socialaccount_providers(  # noqa: F405
+    OIDC_PROVIDER_ID, OIDC_SERVER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_SCOPES  # noqa: F405
+)
+HEADLESS_FRONTEND_URLS = {'socialaccount_login_error': f'{SPA_URL}/login/error'}
+
 # Collect e-mails in django.core.mail.outbox instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
