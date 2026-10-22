@@ -46,7 +46,7 @@ To write a new proposal:
 4. **Update this index** with the new proposal entry
 5. Submit for review
 
-**Important**: See `CLAUDE.md` for detailed proposal writing guidelines including:
+**Important**: See `AGENTS.md` for detailed proposal writing guidelines including:
 - No time estimates required
 - Always update proposal changelog
 - Update this index when changing proposal status
