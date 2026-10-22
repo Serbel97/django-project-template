@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db import models
 from django.db.models.functions import Lower
 
+from apps.core.fields import EncryptedField
 from apps.core.managers.user import UserManager
 
 from apps.core.models.base import BaseModel
@@ -32,12 +33,12 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(null=False, default=True, db_default=True, verbose_name=_('user_is_active'))
     is_staff = models.BooleanField(null=False, default=False, db_default=False, verbose_name=_('user_is_staff'))
 
-    # Second factor (IP-003). The TOTP secret is stored in clear text: encrypt it before production use.
+    # Second factor (IP-003). The TOTP secret is encrypted at rest (AES_FIELD_KEYS).
     two_factor_enabled = models.BooleanField(null=False, default=False, db_default=False)
     two_factor_method = models.CharField(
         null=True, max_length=10, choices=TwoFactorMethod.choices, verbose_name=_('user_two_factor_method')
     )
-    totp_secret = models.CharField(null=True, max_length=64, verbose_name=_('user_totp_secret'))
+    totp_secret = EncryptedField(null=True, verbose_name=_('user_totp_secret'))
 
     # Groups the IdP sent at the last SSO login (IP-003), as received; empty for local users
     idp_groups = models.JSONField(null=False, default=list, blank=True, verbose_name=_('user_idp_groups'))

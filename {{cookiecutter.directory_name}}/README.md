@@ -166,6 +166,31 @@ per-challenge cap of wrong two-factor codes (`TWO_FACTOR_MAX_ATTEMPTS`). A locko
 code attempts per account and refuse logins for a set time.
 
 
+## Encryption keys
+
+Secrets a model has to read back (for example `User.totp_secret`) use `apps.core.fields.EncryptedField`: AES-256-GCM
+with a fresh nonce per value, stored as `bytea` together with the version of the key that encrypted it. An altered
+value fails to decrypt instead of decrypting to something else. Encrypted values cannot be searched; only `isnull`
+lookups work.
+
+Keys live in `AES_FIELD_KEYS` as comma-separated `<version>:<base64 32-byte key>` pairs. A new project gets version
+1 generated into `.env`. New values are encrypted with `AES_FIELD_KEY_VERSION`, or the highest listed version when
+it is empty; every listed version still decrypts. The system check `core.E002` stops the app when encrypted fields
+exist but the keys are missing or invalid.
+
+Rotating a key:
+
+1. `python manage.py rotate_encryption_keys --generate-key` prints a new key.
+2. Add it as the next version and keep the old one: `AES_FIELD_KEYS=2:<new key>,1:<old key>`. Deploy. New writes
+   use version 2; existing values keep decrypting with version 1.
+3. `python manage.py rotate_encryption_keys` re-encrypts every value still on an older version, soft-deleted rows
+   included.
+4. `python manage.py rotate_encryption_keys --dry-run` must report every value on the new version. Then remove the
+   old key: `AES_FIELD_KEYS=2:<new key>`.
+
+Losing a key that still encrypts data makes those rows unloadable, so keep keys in the same secret store as
+`SECRET_KEY` and back them up.
+
 ## Cron jobs
 
 - `crontab -l` list all cron jobs

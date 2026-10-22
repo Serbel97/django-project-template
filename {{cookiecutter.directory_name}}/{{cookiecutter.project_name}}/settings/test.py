@@ -41,6 +41,10 @@ SOCIALACCOUNT_PROVIDERS = build_socialaccount_providers(  # noqa: F405
 )
 HEADLESS_FRONTEND_URLS = {'socialaccount_login_error': f'{SPA_URL}/login/error'}
 
+# Fixed key for encrypted fields; tests that rotate keys override these.
+AES_FIELD_KEYS = '1:MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA='
+AES_FIELD_KEY_VERSION = None
+
 # Collect e-mails in django.core.mail.outbox instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 

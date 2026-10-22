@@ -242,6 +242,12 @@ ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
+# Encrypted model fields (apps.core.fields.EncryptedField, AES-256-GCM). Comma-separated
+# <version>:<base64 32-byte key> pairs; new values use AES_FIELD_KEY_VERSION (the highest version when unset),
+# every listed version still decrypts. Rotation: README, "Encryption keys".
+AES_FIELD_KEYS = os.getenv('AES_FIELD_KEYS', '')
+AES_FIELD_KEY_VERSION = os.getenv('AES_FIELD_KEY_VERSION') or None
+
 # Two-factor authentication
 TWO_FACTOR_CODE_EXPIRATION = datetime.timedelta(minutes=10)
 TWO_FACTOR_MAX_ATTEMPTS = 5
