@@ -1,9 +1,10 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.db import models
 from django.db.models.functions import Lower
 
+from apps.core.fields import EncryptedField
 from apps.core.managers.user import UserManager
 
 from apps.core.models.base import BaseModel
@@ -18,6 +19,10 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
             models.UniqueConstraint(Lower('email'), name='user_email_ci_unique'),
         ]
 
+    class TwoFactorMethod(models.TextChoices):
+        EMAIL = 'email', 'E-mail one-time code'
+        TOTP = 'totp', 'Authenticator application (TOTP)'
+
     # Whitelist of columns clients may sort by via ``?order_by=`` (see apps.api.response.Ordering)
     ORDERING_FIELDS = ('created_at', 'updated_at', 'email', 'name', 'surname', 'last_login')
 
@@ -27,6 +32,16 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     surname = models.CharField(null=False, max_length=150, verbose_name=_('user_surname'))
     is_active = models.BooleanField(null=False, default=True, db_default=True, verbose_name=_('user_is_active'))
     is_staff = models.BooleanField(null=False, default=False, db_default=False, verbose_name=_('user_is_staff'))
+
+    # Second factor (IP-003). The TOTP secret is encrypted at rest (AES_FIELD_KEYS).
+    two_factor_enabled = models.BooleanField(null=False, default=False, db_default=False)
+    two_factor_method = models.CharField(
+        null=True, max_length=10, choices=TwoFactorMethod.choices, verbose_name=_('user_two_factor_method')
+    )
+    totp_secret = EncryptedField(null=True, verbose_name=_('user_totp_secret'))
+
+    # Groups the IdP sent at the last SSO login (IP-003), as received; empty for local users
+    idp_groups = models.JSONField(null=False, default=list, blank=True, verbose_name=_('user_idp_groups'))
 
     objects = UserManager()
     all_objects = UserManager(alive_only=False)
@@ -41,9 +56,7 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         super().save(*args, **kwargs)
 
     def get_full_name(self) -> str:
-        return f'{self.name} {self.surname}'
+        return f"{self.name} {self.surname}"
 
 
-__all__ = [
-    'User'
-]
+__all__ = ['User']

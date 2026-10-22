@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from pydantic import Field
@@ -19,4 +19,4 @@ class UserSerializer:
         is_active: bool
 
     class Me(Detail):
-        pass
+        idp_groups: List[str] = Field(default_factory=list)

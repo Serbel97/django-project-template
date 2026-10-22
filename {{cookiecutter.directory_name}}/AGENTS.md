@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 ## Project Structure
 
@@ -15,17 +15,36 @@ Layered architecture under `apps/`:
 - `middleware/`, `decorators.py`, `urls.py`
 
 **`apps/core/`** — domain & business logic
-- `models/` — soft-delete `BaseModel`, custom `User`, `Token`, `ApiKey`, `RecoveryCode`
+- `models/` — soft-delete `BaseModel`, custom `User`, `Token`, `ApiKey`, `RecoveryCode`,
+  `TwoFactorChallenge`, `BackupCode`
 - `managers/`, `querysets/` — soft delete, token expiry, etc.
 - `serializers/` — **pydantic** response serializers (not DRF)
-- `services/` — business logic / side effects (e.g. `NotificationEmailService`)
+- `services/` — business logic / side effects (e.g. `NotificationEmailService`);
+  `auth/two_factor.py` (`TwoFactorService`: TOTP, e-mail codes, backup codes),
+  `auth/sso.py` (allauth adapters: OIDC claims → `User`, refused logins)
+- `checks.py` — Django system checks (registered in `CoreConfig.ready`)
+- `fields/` — custom model fields (`EncryptedField`); `encryption.py` — its versioned AES-GCM keyring
+- `management/commands/` — `rotate_encryption_keys`
 - `checkers/` — object-level permissions (`django-object-checker`, ABAC)
-- `auth.py` — authentication backends (Bearer, Basic)
+- `auth.py` — authentication backends (Bearer, Basic, `SSOSessionBackend` for allauth sessions)
 
 **`apps/tests/`** — test suite mirroring the above (`api/`, `services/`, `db/`).
 
 **Request flow:** `urls → SecuredView (api key + signature + auth) → Form (validate)
 → service / model (logic) → pydantic serializer → SingleResponse / PaginationResponse`.
+
+**Authentication switches.** `PASSWORD_LOGIN_ENABLED`, `AUTH_PASSWORD_RESET_ENABLED` and
+`AUTH_REGISTRATION_ENABLED` (default on) decide in `apps/api/urls.py` which routes exist; SSO routes exist
+only with `OIDC_PROVIDER_ID` set (`SSO_ENABLED`). The test settings switch SSO on against a fictitious IdP.
+
+**Two-factor enrolment is two steps for TOTP.** `provision_totp` stores the secret but leaves 2FA off;
+`confirm_totp` verifies a real code and only then enables it. Do not collapse these — the split is what
+stops a mis-scanned QR code from locking an account out.
+
+**Secrets at rest use `EncryptedField`.** `apps/core/fields/encrypted.py` (AES-256-GCM, keyring in
+`apps/core/encryption.py`, keys in `AES_FIELD_KEYS` with versions). Use it for any secret a model must be able
+to read back (`User.totp_secret`); passwords and codes that are only compared stay hashed. Values cannot be
+searched (only `isnull`), and `manage.py rotate_encryption_keys` re-encrypts them after a key rotation.
 
 ## Code Style
 

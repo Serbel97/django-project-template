@@ -17,6 +17,9 @@ psycopg = { version = "^3.1", extras = ["c"] }
 pydantic = "^2.5.3"
 sentry-sdk = "^2.0"
 redis = "^5.0.1"
+pyotp = "^2.9"
+cryptography = ">=44.0"
+django-allauth = { version = "^65.0", extras = ["socialaccount", "headless"] }
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.0"

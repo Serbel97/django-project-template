@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from allauth.account.auth_backends import AuthenticationBackend
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.core.exceptions import ValidationError
@@ -37,3 +38,16 @@ class BasicBackend(ModelBackend):
         if not user:
             raise UnauthorizedException()
         return user
+
+
+class SSOSessionBackend(AuthenticationBackend):
+    """
+    allauth's backend for sessions opened by an SSO login, with credential login disabled.
+
+    allauth's social login never calls ``authenticate``: it sets ``user.backend`` to the first
+    ``AuthenticationBackend`` subclass in ``AUTHENTICATION_BACKENDS`` and logs the user in. Left enabled,
+    allauth's ``authenticate`` would be a second password login next to ``ModelBackend``.
+    """
+
+    def authenticate(self, request, **credentials):
+        return None

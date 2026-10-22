@@ -3,9 +3,11 @@
 Cookiecutter post-generation hook.
 
 Runs in the generated project directory after rendering. It creates a ``.env``
-from ``.env.example`` with a freshly generated ``SECRET_KEY`` so the project is
-runnable immediately (every ``manage.py`` command requires ``SECRET_KEY``).
+from ``.env.example`` with a freshly generated ``SECRET_KEY`` and encrypted-field key
+(``AES_FIELD_KEYS``) so the project is runnable immediately (every ``manage.py`` command
+requires ``SECRET_KEY``).
 """
+import base64
 import secrets
 from pathlib import Path
 
@@ -15,6 +17,10 @@ SECRET_KEY_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567
 
 def generate_secret_key(length: int = 50) -> str:
     return "".join(secrets.choice(SECRET_KEY_CHARS) for _ in range(length))
+
+
+def generate_aes_key() -> str:
+    return base64.b64encode(secrets.token_bytes(32)).decode("ascii")
 
 
 def main() -> None:
@@ -27,9 +33,11 @@ def main() -> None:
     content = example.read_text()
     # Replace the bare ``SECRET_KEY=`` line with a generated value.
     content = content.replace("SECRET_KEY=\n", f"SECRET_KEY={generate_secret_key()}\n", 1)
+    # Version 1 of the encrypted-field keys (AES-256), so encrypted columns work from the first migration.
+    content = content.replace("AES_FIELD_KEYS=\n", f"AES_FIELD_KEYS=1:{generate_aes_key()}\n", 1)
     env.write_text(content)
 
-    print("Created .env with a generated SECRET_KEY.")
+    print("Created .env with a generated SECRET_KEY and AES_FIELD_KEYS.")
     print("Next: configure the PG* database variables in .env, then run `make migrations`.")
 
 

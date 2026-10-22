@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Authentication
+- Two-factor authentication: TOTP (authenticator app) or e-mailed one-time codes, with single-use backup
+  codes; TOTP enrolment is two steps (provision, then confirm)
+- Password login (`POST /token`) answers `202` with a challenge for users with a second factor;
+  `POST /auth/2fa/verify` returns the Bearer token
+- Single sign-on with one OpenID Connect provider through django-allauth (headless), switched on by
+  `OIDC_PROVIDER_ID`; the SSO session is swapped for a Bearer token at `POST /auth/sso/token`
+- IdP groups stored on `User.idp_groups` at every SSO login; no account linking by e-mail
+- Switches `PASSWORD_LOGIN_ENABLED`, `AUTH_PASSWORD_RESET_ENABLED`, `AUTH_REGISTRATION_ENABLED` (default on);
+  a disabled path is not routed. `GET /auth/config` reports them
+- System check `core.E001`: registration needs the password reset routes
+
+### Encryption
+- `EncryptedField`: AES-256-GCM encrypted model field with versioned keys (`AES_FIELD_KEYS`,
+  `AES_FIELD_KEY_VERSION`); a new project gets a generated key in `.env`
+- `manage.py rotate_encryption_keys` re-encrypts values after a key rotation (`--dry-run`, `--generate-key`)
+- `User.totp_secret` is encrypted at rest
+- System check `core.E002`: encrypted fields need valid keys
+
 ## 0.6.0 : 2026-06-23
 
 ### Upgrades

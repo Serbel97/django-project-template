@@ -6,6 +6,7 @@ Run the suite with:
     python manage.py makemigrations          # once, if you haven't generated migrations yet
     python manage.py test --settings={{cookiecutter.project_name}}.settings.test
 """
+
 import os
 
 from .base import *  # noqa: F401,F403
@@ -27,6 +28,22 @@ DATABASES = {
         },
     }
 }
+
+# SSO switched on against a fictitious IdP; no test talks to it.
+OIDC_PROVIDER_ID = 'test-idp'
+OIDC_SERVER_URL = 'https://idp.invalid/realms/test'
+OIDC_CLIENT_ID = 'test-client'
+OIDC_CLIENT_SECRET = 'test-client-secret'
+SSO_ENABLED = True
+SPA_URL = 'http://spa.test'
+SOCIALACCOUNT_PROVIDERS = build_socialaccount_providers(  # noqa: F405
+    OIDC_PROVIDER_ID, OIDC_SERVER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_SCOPES  # noqa: F405
+)
+HEADLESS_FRONTEND_URLS = {'socialaccount_login_error': f'{SPA_URL}/login/error'}
+
+# Fixed key for encrypted fields; tests that rotate keys override these.
+AES_FIELD_KEYS = '1:MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA='
+AES_FIELD_KEY_VERSION = None
 
 # Collect e-mails in django.core.mail.outbox instead of sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

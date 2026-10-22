@@ -23,6 +23,10 @@ class UserManagement(SecuredView):
 
     @transaction.atomic
     def post(self, request):
+        # Self-registration, switched by AUTH_REGISTRATION_ENABLED; the route itself stays for GET.
+        if not settings.AUTH_REGISTRATION_ENABLED:
+            raise ProblemDetailException(_('Not found.'), status=HTTPStatus.NOT_FOUND)
+
         form = UserForm.Create.create_from_request(request)
 
         if not form.is_valid():
@@ -36,7 +40,7 @@ class UserManagement(SecuredView):
         recovery_code = RecoveryCode.objects.create(user=user)
 
         NotificationEmailService.create(
-            recipients=[f'{user.get_full_name()} <{user.email}>'],
+            recipients=[f"{user.get_full_name()} <{user.email}>"],
             subject=_('Registration'),
             content={
                 'recovery_code': recovery_code,

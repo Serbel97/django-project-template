@@ -8,7 +8,7 @@ argument-hint: "[NNN] <idea description>"
 # ip — Quick proposal capture
 
 Quickly save an Intellectual Property (IP) proposal to `docs/proposals/posts/` following the
-project's proposal system (see `CLAUDE.md` for the full guidelines).
+project's proposal system (see `AGENTS.md` for the full guidelines).
 
 ## Argument Parsing
 
